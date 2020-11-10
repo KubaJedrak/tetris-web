@@ -2,14 +2,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const width = 10  // represents the value of all cells in that row -> by adding one more value of width to another value, we allow for the blocks to jump down a row   
     let nextRandom = 0;
-    document.querySelector(".grid")
+    let timerId = null;
+    let score = 0;
     
-    let squares = Array.from(document.querySelectorAll(".game-box div"))
+    let squares = Array.from(document.querySelectorAll(".grid div"))
     const scoreValue = document.querySelector(".score-value")
     const startButton = document.querySelector(".start-button")
+    const grid = document.querySelector(".grid")
     
-    console.log(squares)
-
 //The Tetrominoes
 const lTetromino = [
     [1, width+1, width*2+1, 2],
@@ -58,8 +58,6 @@ const lTetromino = [
 
   let current = theTetrominoes[random][currentRotation]
 
-  // Select Variant
-
   // Draw a tetromino
 
   function draw() {
@@ -74,12 +72,6 @@ const lTetromino = [
       }) 
   }
 
-  draw()
-
-  // make the tetromino move 
-
-  timerId = setInterval(moveDown, 1000)
-
   // assign keycodes
   function control (e) {
       if (e.keyCode === 37) {
@@ -91,7 +83,6 @@ const lTetromino = [
       } else if (e.keyCode === 40) {
           moveDown()
       }
-     
   }
 
     document.addEventListener("keydown", control)
@@ -109,12 +100,14 @@ const lTetromino = [
     if (current.some(index => squares[currentPosition + index + width].classList.contains("taken")) ) {
         current.forEach(index => squares[currentPosition + index].classList.add("taken"))
 
-        // start new tetromino falling
+        // start a new tetromino falling
         random = nextRandom
         nextRandom = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
         current = theTetrominoes[random][currentRotation]
         currentPosition = 4
         draw()
+        displayShape()
+        addScore()
     }
   }
 
@@ -157,7 +150,7 @@ const lTetromino = [
 
   // show the next tetromino to drop:
 
-  const displaySquares = document.querySelectorAll(".mini-grid-cell")
+  const displaySquares = document.querySelectorAll(".mini-grid div")
   const displayWidth = 4;
   let displayIndex = 0;
 
@@ -178,6 +171,38 @@ const lTetromino = [
     })
   }
 
+  // pause/start function:
 
+  startButton.addEventListener("click", () => {
+    if (timerId) {                     // this way value is NOT null
+      clearInterval(timerId)
+      timerId = null;
+    } else {
+      draw()
+      timerId = setInterval(moveDown, 1000)
+      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+      displayShape()
+      // addScore()
+    }
+  })
 
+  // add score
+
+  function addScore() {
+    for (let i = 0; i < 199; i += width) {
+      const row  = [i, i + 1, i + 2, i + 3, i + 4, i + 5, i + 6,  i + 7, i + 8, i + 9]
+
+      if (row.every(index => squares[index].classList.contains("taken"))) {
+        score += 10;
+        scoreValue.innerHTML = score;
+        row.forEach(index => {
+          squares[index].classList.remove("taken")
+          squares[index].classList.remove("tetromino")
+        })
+        const squaresRemoved = squares.splice(i, width)
+        squares = squaresRemoved.concat(squares)
+        squares.forEach(cell => grid.appendChild(cell))
+      }
+    }
+  }
 })

@@ -23,7 +23,7 @@
     background-color: limegreen;
 }
 
-.game-box {
+.grid {    /* grid */
     width: 400px;
     height: 800px;
 
@@ -33,7 +33,7 @@
     flex-wrap: wrap;
 }
 
-.game-grid-cell {
+.grid-cell {
     width: 40px;
     height: 40px;
 }
@@ -41,11 +41,11 @@
 .tetromino {
     background-color: blue;   
 }
-
+/* 
 .taken{
     width: 40px;
     height: 40px;
-}
+} */
 
 .mini-grid {
     width: 80px;
@@ -56,7 +56,7 @@
     background-color: lightgray ;
 }
 
-.mini-grid-cell {
+.mini-cell {
     width: 20px;
     height: 20px;
 }
