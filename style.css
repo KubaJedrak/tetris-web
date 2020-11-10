@@ -47,8 +47,21 @@
     height: 40px;
 }
 
+.mini-grid {
+    width: 80px;
+    height: 80px;
+    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: lightgray ;
+}
+
+.mini-grid-cell {
+    width: 20px;
+    height: 20px;
+}
 
 .game-stats {
     width: 200px;
-    height: 100%;
+    height: 70%;
 }

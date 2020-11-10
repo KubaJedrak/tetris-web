@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const width = 10  // represents the value of all cells in that row -> by adding one more value of width to another value, we allow for the blocks to jump down a row
+    const width = 10  // represents the value of all cells in that row -> by adding one more value of width to another value, we allow for the blocks to jump down a row   
+    let nextRandom = 0;
     document.querySelector(".grid")
     
     let squares = Array.from(document.querySelectorAll(".game-box div"))
@@ -109,7 +110,8 @@ const lTetromino = [
         current.forEach(index => squares[currentPosition + index].classList.add("taken"))
 
         // start new tetromino falling
-        random = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
+        random = nextRandom
+        nextRandom = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
         current = theTetrominoes[random][currentRotation]
         currentPosition = 4
         draw()
@@ -142,6 +144,7 @@ const lTetromino = [
     draw() 
   }
 
+  // rotate function
   function rotate() {
     undraw()
     currentRotation++
@@ -150,6 +153,29 @@ const lTetromino = [
     }
     current = theTetrominoes[random][currentRotation]
     draw()
+  }
+
+  // show the next tetromino to drop:
+
+  const displaySquares = document.querySelectorAll(".mini-grid-cell")
+  const displayWidth = 4;
+  let displayIndex = 0;
+
+  const upcomingTetrominoes = [
+    [1, displayWidth + 1, displayWidth * 2 + 1, 2],                   // l
+    [0, displayWidth, displayWidth + 1, displayWidth * 2 + 1],        // z
+    [1, displayWidth, displayWidth + 1, displayWidth + 2],            // t
+    [0, 1, displayWidth, displayWidth + 1],                           // o
+    [1, displayWidth + 1, displayWidth * 2 + 1, displayWidth * 3 + 1] // i
+  ]
+
+  function displayShape() {
+    displaySquares.forEach(square => {
+      square.classList.remove("tetromino")
+    })
+    upcomingTetrominoes[nextRandom].forEach( index => {
+      displaySquares[displayIndex + index].classList.add("tetromino")
+    })
   }
 
 
