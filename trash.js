@@ -4,19 +4,23 @@ document.addEventListener("DOMContentLoaded", () => {
     let nextRandom = 0;
     let timerId = null;
     let score = 0;
+    const colors = [           // CHANGE 
+      "orange",
+      "red",
+      "blue",
+      "green",
+      "yellow"
+    ]
     
+    // let squares = Array.from(document.querySelectorAll(".grid div"))
+    let squares = null;
     const scoreValue = document.querySelector(".score-value")
-    const startButton = document.querySelector(".start-game-button")
     const pauseButton = document.querySelector(".pause-button")
-
-    let squares = Array.from(document.querySelectorAll(".grid div"))
-    let gridCells = Array.from(document.querySelectorAll(".grid-cell"))
+    const startButton = document.querySelector(".start-game-button")
     const grid = document.querySelector(".grid")
-
-    let gameInProgress = false;
-   
-  //The Tetrominoes
-  const lTetromino = [
+    
+//The Tetrominoes
+const lTetromino = [
     [1, width+1, width*2+1, 2],
     [width, width+1, width+2, width*2+2],
     [1, width+1, width*2+1, width*2],
@@ -67,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function draw() {
       current.forEach(index => {
           squares[currentPosition + index].classList.add("tetromino")
+          squares[currentPosition + index].style.background
       })
   } 
 
@@ -101,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //freeze function
 
   function freeze() {
-    if (current.some(index => squares[currentPosition + index + width].classList.contains("taken")) ) {
+    if (current.some(index => squares[currentPosition + index + width].classList.contains("taken" || "grid-bottom")) ) {  // DOES THIS WORK ????
         current.forEach(index => squares[currentPosition + index].classList.add("taken"))
 
         // start a new tetromino falling
@@ -109,10 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
         nextRandom = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
         current = theTetrominoes[random][currentRotation]
         currentPosition = 4
-        draw();
-        displayShape();
-        addScore();
-        gameOver();
+        draw()
+        displayShape()
+        addScore()
+        gameOver()
     }
   }
 
@@ -133,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     undraw()
     const isNextRightEdge = current.some(index => (currentPosition + index) % width === width - 1);
   
-    if (!isNextRightEdge) currentPosition += 1; // ...
+    if (!isNextRightEdge) currentPosition += 1;
 
     if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
         currentPosition -= 1;
@@ -142,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     draw() 
   }
 
-  ///FIX ROTATION OF TETROMINOS A THE EDGE 
+  ///FIX ROTATION OF TETROMINOS AT THE EDGE 
   function isAtRight() {
     return current.some(index=> (currentPosition + index + 1) % width === 0)  
   }
@@ -175,15 +180,14 @@ document.addEventListener("DOMContentLoaded", () => {
         currentRotation = 0
     }
     current = theTetrominoes[random][currentRotation]
-    checkRotatedPosition();
+    checkRotatedPosition()
     draw()
   }
 
   // show the next tetromino to drop:
-
   const displaySquares = document.querySelectorAll(".mini-grid div")
   const displayWidth = 4;
-  let displayIndex = 0;
+  const displayIndex = 0;
 
   const upcomingTetrominoes = [
     [1, displayWidth + 1, displayWidth * 2 + 1, 2],                   // l
@@ -202,36 +206,55 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // start function:
-  startButton.addEventListener("click", () => {
-    if (!gameInProgress) {
-      gameInProgress = true;
-      console.log(`START STATE: ${gameInProgress}`)
-      scoreValue.innerText = "0"
-      draw()
-      timerId = setInterval(moveDown, 1000)
-      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-      displayShape()
-    }
-  })
+  // start a new game:
 
-  // pause/resume function:
+  function drawGrid() {
+    if (grid.innerHTML === "") {
+      for (let i = 0; i < 200; i++) {
+        grid.appendChild(document.createElement("div")).classList.add("grid-cell")
+        // console.log("ping")
+      }
+  
+      for (let i = 0; i < 10; i++) {
+        grid.appendChild(document.createElement("div")).classList.add("grid-bottom")
+      }
+    }
+    let squares = Array.from(document.querySelectorAll(".grid div"))
+    let currentPosition = 4;
+    let currentRotation = 0;
+    return squares
+  }
+
+  function startNewGame() {
+
+    scoreValue.innerText = "0"
+    // console.log("LONGER PING")
+    draw()
+    timerId = setInterval(moveDown, 1000)
+    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    displayShape()
+
+  }
+
+  startButton.addEventListener("click", () => {
+    drawGrid()
+    startNewGame()
+  })
+ 
+  // pause/restart function:
   pauseButton.addEventListener("click", () => {
     if (timerId) {                     // this way value is NOT null
       clearInterval(timerId)
       timerId = null;
-      console.log(`MID STATE: ${gameInProgress}`)
       pauseButton.innerText = "Resume Game"
     } else {
-      if (gameInProgress) {
-        draw()
-        timerId = setInterval(moveDown, 1000)
-        nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-        displayShape()
-        console.log(`MID STATE: ${gameInProgress}`)
-        pauseButton.innerText = "Pause Game"
-      }
-
+      draw()
+      timerId = setInterval(moveDown, 1000)
+      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+      displayShape()
+      
+      pauseButton.innerText = "Pause Game"
+      // addScore()   ???
     }
   })
 
@@ -255,24 +278,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // clear board:
-  function clearGrid() {
-    gridCells.forEach(index => {
-      index.classList.remove("taken");
-      index.classList.remove("tetromino")
-    })
-  }
-
-  //game over
   function gameOver() {
-    if(current.some(index => squares[currentPosition + index].classList.contains('taken'))) {
-      // scoreDisplay.innerHTML = 'end'
-      gameInProgress = false
+    if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
+      // scoreValue.innerHTML = "end"            <---- I want to work on this, add high score etc.
       clearInterval(timerId)
-      clearGrid();
-      console.log(`END STATE: ${gameInProgress}`)
+      grid.innerHTML = ""
     }
   }
-
-  console.log(gameInProgress)
 })
