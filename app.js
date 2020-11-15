@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // TO DO:
+    // allow for last-second adjustment of tetrominoes??
+
     const width = 10  // represents the value of all cells in that row -> by adding one more value of width to another value, we allow for the blocks to jump down a row   
     let nextRandom = 0;
     let timerId = null;
@@ -17,9 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let gamePaused = false;
     let time = 0;
     let timeMultiplier = 1;
-    let speedMultiplier = null;
-    let diffMultiplier = null;
-    // let rowCounter = null;
+    let speedMultiplier = 1;
+    let moveDownSpeed = 1000;
+    // let diffMultiplier = null;
    
   //The Tetrominoes
   const lTetromino = [
@@ -88,15 +91,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // assign keycodes
   function control (e) {
-      if (e.keyCode === 37) {
-          moveLeft()
-      } else if (e.keyCode === 39) {
-          moveRight()
-      } else if (e.keyCode === 38) {
-          rotate()
-      } else if (e.keyCode === 40) {
-          moveDown()
+    if (e.keyCode === 37) {
+        moveLeft()
+    } else if (e.keyCode === 39) {
+        moveRight()
+    } else if (e.keyCode === 38) {
+        rotate()
+    } else if (e.keyCode === 40) {
+        moveDown()
+    } else if (e.keyCode === 32) {
+      if (!gamePaused) {
+        pauseGame()          
+      } else if (gamePaused) {
+        resumeGame();
       }
+    }
   }
 
     document.addEventListener("keydown", control)
@@ -119,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         nextRandom = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
         current = theTetrominoes[random][currentRotation]
         currentPosition = 4
-        draw();
+        drawTimeOut = setTimeout(draw, 100);
         displayShape();
         addScore();
         gameOver();
@@ -217,57 +226,60 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!gameInProgress) {
       gameInProgress = true;
       pauseButton.innerText = "Pause Game"
-      scoreValue.innerText = "0"
+      score = 0;
+      draw()
+      timerId = setInterval(moveDown, moveDownSpeed)
+      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+      displayShape()
+      gameTimeID = setInterval(timer, 1000) // measures game time
+    }
+  })
+
+  function pauseGame() {
+    clearInterval(timerId)
+    timerId = null;
+    pauseButton.innerText = "Resume Game"
+    gamePaused = true;
+  }
+
+  function resumeGame() {
+    if (gameInProgress) {
       draw()
       timerId = setInterval(moveDown, 1000)
       nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-      displayShape()
-      gameTimeID = setInterval(timer, 1000) // ?????
+      pauseButton.innerText = "Pause Game"
+      gamePaused = false;
     }
-  })
+  }
 
   // pause/resume function:
   pauseButton.addEventListener("click", () => {
     if (timerId) {                     // this way value is NOT null
-      clearInterval(timerId)
-      timerId = null;
-      pauseButton.innerText = "Resume Game"
-      gamePaused = true;
+      pauseGame();
     } else {
-      if (gameInProgress) {
-        draw()
-        timerId = setInterval(moveDown, 1000)
-        nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-        displayShape()
-        pauseButton.innerText = "Pause Game"
-        gamePaused = false;
-      }
+      resumeGame();
     }
   })
 
   // game time:
-
   function timer() {
-
     if (gameInProgress && !gamePaused) {
       time++
-      // console.log(time)
       updateTimeModifier();
-      // updateSpeedModifier()     // !!!!!!
+      updateSpeedModifier()     // !!!!!!
     }
   }
-
-  // difficulty modifier:
+  // speed modifier:
   function updateSpeedModifier() {
-
+    speedMultiplier = 1 + (time / 300)
+    moveDownSpeed = 1000 * speedMultiplier;
+    console.log(moveDownSpeed)
+    return moveDownSpeed
   }
-
   // time multiplier
   function updateTimeModifier() {
     timeMultiplier = 1 + (time / 60) * 0.15
-    console.log(timeMultiplier)  // REMOVE LATER
   }
-
   
   // add score
   function addScore() {
@@ -309,6 +321,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // let scoreChange = (10 * rowCounter * comboMultiplier * timeMultiplier)
     // console.log(`Score Change: ${scoreChange}`)
     rowCounterResetID = setTimeout(counterReset, 100 )
+
+    console.log(`Speed Multiplier: ${speedMultiplier}`)
   }
 
   // clear board:
@@ -327,6 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(timerId)
       clearGrid();
       clearInterval(gameTimeID)
+      // updateHighScore                      !!!!!!!!!!!!
     }
   }
 }) 
