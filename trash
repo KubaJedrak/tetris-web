@@ -1,0 +1,41 @@
+    // temp
+    const gridCellsTest = Array.from(document.querySelectorAll(".grid-cell"))
+    const gridTest = Array.from(document.querySelector(".grid"))
+
+    function removeCells() { 
+      gridTest.forEach(index => {
+        gridCellsTest.classList.remove("taken") 
+      })
+    }
+
+
+    function clearGrid() {
+
+      gridCell.forEach(index => {
+        Element.classList.remove("tetromino");
+        Element.classList.remove("taken")
+      })
+    }  
+
+// function clearGrid() {
+
+//   function clearTaken() {
+//     gridCell.forEach(cell => {
+//       cell.classList.remove("taken")
+//     })
+//   }
+
+//   function clearTetromino() {
+//     gridCell.forEach(cell => {
+//       cell.classList.remove("tetromino")
+//     })
+//   }
+
+//   cell.style.backgroundColor = "grey";
+//   clearTaken()
+//   clearTetromino()
+// }
+
+// function clearGrid() {
+//   gridCell.remove();
+// }  
