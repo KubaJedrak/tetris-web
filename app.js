@@ -14,6 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const grid = document.querySelector(".grid")
 
     let gameInProgress = false;
+    let gamePaused = false;
+    let time = 0;
+    let timeMultiplier = 1;
+    let speedMultiplier = null;
+    let diffMultiplier = null;
+    // let rowCounter = null;
    
   //The Tetrominoes
   const lTetromino = [
@@ -65,9 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Draw a tetromino
 
   function draw() {
-      current.forEach(index => {
-          squares[currentPosition + index].classList.add("tetromino")
-      })
+    current.forEach(index => {
+        squares[currentPosition + index].classList.add("tetromino")
+    })
+
+    if (!gameInProgress) {
+      undraw()
+    }
   } 
 
   function undraw() {
@@ -206,12 +216,13 @@ document.addEventListener("DOMContentLoaded", () => {
   startButton.addEventListener("click", () => {
     if (!gameInProgress) {
       gameInProgress = true;
-      console.log(`START STATE: ${gameInProgress}`)
+      pauseButton.innerText = "Pause Game"
       scoreValue.innerText = "0"
       draw()
       timerId = setInterval(moveDown, 1000)
       nextRandom = Math.floor(Math.random() * theTetrominoes.length)
       displayShape()
+      gameTimeID = setInterval(timer, 1000) // ?????
     }
   })
 
@@ -220,39 +231,84 @@ document.addEventListener("DOMContentLoaded", () => {
     if (timerId) {                     // this way value is NOT null
       clearInterval(timerId)
       timerId = null;
-      console.log(`MID STATE: ${gameInProgress}`)
       pauseButton.innerText = "Resume Game"
+      gamePaused = true;
     } else {
       if (gameInProgress) {
         draw()
         timerId = setInterval(moveDown, 1000)
         nextRandom = Math.floor(Math.random() * theTetrominoes.length)
         displayShape()
-        console.log(`MID STATE: ${gameInProgress}`)
         pauseButton.innerText = "Pause Game"
+        gamePaused = false;
       }
-
     }
   })
 
-  // add score
+  // game time:
 
+  function timer() {
+
+    if (gameInProgress && !gamePaused) {
+      time++
+      // console.log(time)
+      updateTimeModifier();
+      // updateSpeedModifier()     // !!!!!!
+    }
+  }
+
+  // difficulty modifier:
+  function updateSpeedModifier() {
+
+  }
+
+  // time multiplier
+  function updateTimeModifier() {
+    timeMultiplier = 1 + (time / 60) * 0.15
+    console.log(timeMultiplier)  // REMOVE LATER
+  }
+
+  
+  // add score
   function addScore() {
+    let rowCounter = 0;
     for (let i = 0; i < 199; i += width) {
       const row  = [i, i + 1, i + 2, i + 3, i + 4, i + 5, i + 6,  i + 7, i + 8, i + 9]
-
       if (row.every(index => squares[index].classList.contains("taken"))) {
-        score += 10;
-        scoreValue.innerHTML = score;
+        rowCounter++
         row.forEach(index => {
           squares[index].classList.remove("taken")
           squares[index].classList.remove("tetromino")
         })
         const squaresRemoved = squares.splice(i, width)
+        console.log(squaresRemoved)
         squares = squaresRemoved.concat(squares)
         squares.forEach(cell => grid.appendChild(cell))
       }
     }
+
+    function counterReset() {
+      rowCounter = 0;
+      // console.log(`PING: Counter now at ${rowCounter}`)
+    }
+    
+    let comboMultiplier = null;
+    if (rowCounter === 1) {
+      comboMultiplier = 1;
+    } else if (rowCounter === 2) {
+      comboMultiplier = 1.25;
+    } else if (rowCounter === 3) {
+      comboMultiplier = 1.5;
+    } else if (rowCounter === 4) {
+      comboMultiplier = 2;
+    }
+    
+    score = Math.round(score + (10 * rowCounter * comboMultiplier * timeMultiplier));
+    scoreValue.innerHTML = score;
+    // console.log(`rowCounter of ${rowCounter} --> Combo Multiplier: ${comboMultiplier}`)
+    // let scoreChange = (10 * rowCounter * comboMultiplier * timeMultiplier)
+    // console.log(`Score Change: ${scoreChange}`)
+    rowCounterResetID = setTimeout(counterReset, 100 )
   }
 
   // clear board:
@@ -267,12 +323,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function gameOver() {
     if(current.some(index => squares[currentPosition + index].classList.contains('taken'))) {
       // scoreDisplay.innerHTML = 'end'
-      gameInProgress = false
+      gameInProgress = false;
       clearInterval(timerId)
       clearGrid();
-      console.log(`END STATE: ${gameInProgress}`)
+      clearInterval(gameTimeID)
     }
   }
-
-  console.log(gameInProgress)
-})
+}) 

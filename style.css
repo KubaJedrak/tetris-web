@@ -10,7 +10,7 @@
 .wrapper {
     width: 70%;
     min-height: 500px;
-    margin: 10% auto;
+    margin: 2% auto;
 }
 
 .game-container{
@@ -46,11 +46,6 @@
 .tetromino {
     background-color: blue;   
 }
-/* 
-.taken{
-    width: 40px;
-    height: 40px;
-} */
 
 .mini-grid {
     width: 80px;
