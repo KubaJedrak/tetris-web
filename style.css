@@ -7,10 +7,30 @@
     font: 500;   // change this later
 } */
 
+* {
+    box-sizing: border-box;
+    font-family: 'Raleway', sans-serif;
+    font-size: 14px;
+}
+
+.html {
+    height: 100vh;
+}
+
+.body {
+    height: 100vh;
+    margin: 0;
+}
+
 .wrapper {
-    width: 70%;
-    min-height: 500px;
-    margin: 2% auto;
+    width: 99vw;
+    height: 97vh;
+
+    background: #cbcbcb; /* Old browsers */
+    background: -moz-linear-gradient(top,  #cbcbcb 0%, #cbcbcb 0%, #a8a8a8 49%, #a0a0a0 65%, #8f8f8f 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #cbcbcb 0%,#cbcbcb 0%,#a8a8a8 49%,#a0a0a0 65%,#8f8f8f 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #cbcbcb 0%,#cbcbcb 0%,#a8a8a8 49%,#a0a0a0 65%,#8f8f8f 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cbcbcb', endColorstr='#8f8f8f',GradientType=0 ); /* IE6-9 */
 }
 
 .game-container{
@@ -20,14 +40,17 @@
     display: flex;
     flex-wrap: nowrap;
 
-    background-color: limegreen;
+    box-sizing: content-box;
+    padding: 20px;
+    margin: 0px auto;
+
+    border: hidden;
+    border-radius: 25px;
 }
 
 .grid {    /* grid */
     width: 400px;
     height: 800px;
-
-    background-color: grey;
 
     display: flex;
     flex-wrap: wrap;
@@ -36,6 +59,9 @@
 .grid-cell {
     width: 40px;
     height: 40px;
+
+    border: 1px solid hsla(0, 0%, 100%, 0.25);
+    border-radius: 5px;
 }
 
 .grid-bottom {
@@ -44,7 +70,23 @@
 }
 
 .tetromino {
-    background-color: blue;   
+    background-color: indianred;
+}
+
+.game-stats {
+    width: 200px;
+    height: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: space-around;
+    
+    background-color: rgba(75, 75, 75, 0.1);
+}
+
+.mini-grid-container{
+    width: 100%;
 }
 
 .mini-grid {
@@ -53,15 +95,36 @@
     margin: 20px auto;
     display: flex;
     flex-wrap: wrap;
-    background-color: lightgray ;
 }
 
 .mini-cell {
     width: 20px;
     height: 20px;
+
+    border: 1px solid lightgray;
+    border-radius: 5px;
 }
 
-.game-stats {
-    width: 200px;
-    height: 70%;
+.header {
+    width: 50%;
+    height: 50px;
+
+    margin: 10px auto;
+
+    font-size: 20px;
+}
+
+.score-value {
+    font-size: 20px;
+}
+
+
+.button {
+    width: 150px;
+    height: 40px;
+
+    margin: 10px auto;
+
+    background-color: #FFAB12;
+    border-radius: 5px;
 }

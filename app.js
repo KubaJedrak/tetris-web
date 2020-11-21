@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let speedMultiplier = 1;
     let moveDownSpeed = 1000;
     // let diffMultiplier = null;
+
+    const colors = [
+      "#F7FF28",
+      "#FF3BC1",
+      "#00DC93",
+      "#00FAFB",
+      "#FF2525",
+      "#2800F0"
+    ]
    
   //The Tetrominoes
   const lTetromino = [
@@ -30,6 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     [width, width+1, width+2, width*2+2],
     [1, width+1, width*2+1, width*2],
     [width, width*2, width*2+1, width*2+2]
+  ]
+
+  const rLTetromino = [
+    [],
+    [],
+    [],
+    [],
+    [],
   ]
 
   const zTetromino = [
@@ -76,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function draw() {
     current.forEach(index => {
         squares[currentPosition + index].classList.add("tetromino")
+        squares[currentPosition + index].style.backgroundColor = colors[random]
     })
 
     if (!gameInProgress) {
@@ -86,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function undraw() {
       current.forEach(index => {
           squares[currentPosition + index].classList.remove("tetromino")
+          squares[currentPosition + index].style.backgroundColor = ""
       }) 
   }
 
@@ -215,9 +234,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function displayShape() {
     displaySquares.forEach(square => {
       square.classList.remove("tetromino")
+      square.style.backgroundColor = ""
     })
     upcomingTetrominoes[nextRandom].forEach( index => {
       displaySquares[displayIndex + index].classList.add("tetromino")
+      displaySquares[displayIndex + index].style.backgroundColor = colors[nextRandom]
     })
   }
 
@@ -227,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gameInProgress = true;
       pauseButton.innerText = "Pause Game"
       score = 0;
+      scoreValue.innerText = "0"
       draw()
       timerId = setInterval(moveDown, moveDownSpeed)
       nextRandom = Math.floor(Math.random() * theTetrominoes.length)
@@ -291,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.forEach(index => {
           squares[index].classList.remove("taken")
           squares[index].classList.remove("tetromino")
+          squares[index].style.backgroundColor = ""
         })
         const squaresRemoved = squares.splice(i, width)
         console.log(squaresRemoved)
