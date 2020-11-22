@@ -1,9 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // TO DO:
-    // allow for last-second adjustment of tetrominoes??
 
-    const width = 10  // represents the value of all cells in that row -> by adding one more value of width to another value, we allow for the blocks to jump down a row   
+    // allow for last-second adjustment of tetrominoes??
+    // add "lock" to movement functions during pause
+    // fix Enter to start?
+    // pausing before game start and then starting causes a double timer...
+    // prevent movement after connection has been made in certain conditions when making last second adjustments
+    // look into (again) edge interactions...
+    // add "inactive" state to Start New Game button when Game is In Progress
+
+    // TEST COMBO MULTIPLIER AGAIN tobesure
+    // add High Score (5x)        [gameOver function]
+
+    const width = 10
     let nextRandom = 0;
     let timerId = null;
     let score = 0;
@@ -11,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const scoreValue = document.querySelector(".score-value")
     const startButton = document.querySelector(".start-game-button")
     const pauseButton = document.querySelector(".pause-button")
+    const endButton = document.querySelector(".end-game-button")
 
     let squares = Array.from(document.querySelectorAll(".grid div"))
     let gridCells = Array.from(document.querySelectorAll(".grid-cell"))
@@ -18,11 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let gameInProgress = false;
     let gamePaused = false;
+    let gameEnded = false;
     let time = 0;
     let timeMultiplier = 1;
     let speedMultiplier = 1;
     let moveDownSpeed = 1000;
-    // let diffMultiplier = null;
 
     const colors = [
       "#F7FF28",
@@ -38,15 +49,14 @@ document.addEventListener("DOMContentLoaded", () => {
     [1, width+1, width*2+1, 2],
     [width, width+1, width+2, width*2+2],
     [1, width+1, width*2+1, width*2],
-    [width, width*2, width*2+1, width*2+2]
+    [0, width, width+1, width+2]
   ]
 
-  const rLTetromino = [
-    [],
-    [],
-    [],
-    [],
-    [],
+  const l2Tetromino = [
+    [0, 1, width+1, width*2+1],
+    [2, width, width+1, width+2],
+    [1, width+1, width*2+1,width*2+2],
+    [width, width+1, width+2, width*2]
   ]
 
   const zTetromino = [
@@ -77,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [width,width+1,width+2,width+3]
   ]
 
-  const theTetrominoes = [lTetromino, zTetromino, tTetromino, oTetromino, iTetromino]
+  const theTetrominoes = [lTetromino, l2Tetromino, zTetromino, tTetromino, oTetromino, iTetromino]
 
   // Select Shape
   let random = Math.floor(Math.random() * theTetrominoes.length)
@@ -85,20 +95,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPosition = 4;
   let currentRotation = 0;
 
-
   let current = theTetrominoes[random][currentRotation]
 
   // Draw a tetromino
-
   function draw() {
     current.forEach(index => {
         squares[currentPosition + index].classList.add("tetromino")
         squares[currentPosition + index].style.backgroundColor = colors[random]
     })
 
-    if (!gameInProgress) {
+    if (gamePaused || gameEnded) {
       undraw()
-    }
+    } 
   } 
 
   function undraw() {
@@ -124,27 +132,32 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (gamePaused) {
         resumeGame();
       }
+    } else if (e.keycode === 13) {
+        if (!gameInProgress) {
+          startNewGame()
+        }
     }
   }
 
-    document.addEventListener("keydown", control)
+  document.addEventListener("keydown", control)
 
   function moveDown() {
+    if (!gamePaused) {
       undraw()
       currentPosition += width
       draw()
       freeze()
+    }
   }
 
   //freeze function
-
   function freeze() {
     if (current.some(index => squares[currentPosition + index + width].classList.contains("taken")) ) {
         current.forEach(index => squares[currentPosition + index].classList.add("taken"))
 
         // start a new tetromino falling
         random = nextRandom
-        nextRandom = Math.floor(Math.random() * theTetrominoes.length)            // we can turn this into a function later
+        nextRandom = Math.floor(Math.random() * theTetrominoes.length)
         current = theTetrominoes[random][currentRotation]
         currentPosition = 4
         drawTimeOut = setTimeout(draw, 100);
@@ -176,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
         currentPosition -= 1;
     }
-    
     draw() 
   }
 
@@ -218,13 +230,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // show the next tetromino to drop:
-
   const displaySquares = document.querySelectorAll(".mini-grid div")
   const displayWidth = 4;
   let displayIndex = 0;
 
   const upcomingTetrominoes = [
-    [1, displayWidth + 1, displayWidth * 2 + 1, 2],                   // l
+    [1, displayWidth + 1, displayWidth * 2 + 1, 2],                   // l   (reverse)
+    [0, 1, displayWidth + 1, displayWidth * 2 + 1],                   // l2  (normal L)
     [0, displayWidth, displayWidth + 1, displayWidth * 2 + 1],        // z
     [1, displayWidth, displayWidth + 1, displayWidth + 2],            // t
     [0, 1, displayWidth, displayWidth + 1],                           // o
@@ -242,21 +254,63 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // start function:
-  startButton.addEventListener("click", () => {
-    if (!gameInProgress) {
-      gameInProgress = true;
-      pauseButton.innerText = "Pause Game"
-      score = 0;
-      scoreValue.innerText = "0"
-      draw()
-      timerId = setInterval(moveDown, moveDownSpeed)
-      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-      displayShape()
-      gameTimeID = setInterval(timer, 1000) // measures game time
-    }
-  })
+  function logStates() {
+    console.log(`game in progress: ${gameInProgress}`)
+    console.log(`game paused: ${gamePaused}`)
+    console.log(`game ended: ${gameEnded}`)
+    console.log("---------------------")
+  }
 
+  // Game State Functions:
+  function resetStates() {
+    gameInProgress = false;
+    gamePaused = false;
+    gameEnded = false;
+  }
+
+  function resetModifiers() {
+    time = 0;
+    timeMultiplier = 1;
+    speedMultiplier = 1;
+    moveDownSpeed = 1000;
+    clearInterval(timerId)
+    clearInterval(gameTimeID)
+  }
+
+  function resetScore() {
+    scoreValue.innerText = "0"
+    score = 0;
+  }
+
+  function initiateTetrominoes() {
+    draw()
+    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    displayShape()
+    timerId = setInterval(moveDown, moveDownSpeed)
+    gameTimeID = setInterval(timer, 1000) // measures game time
+  }
+
+  // start a new game after previous ended
+  function restartGame() {
+    resetScore()
+    resetStates()
+    resetModifiers() // remove from here??? its in endgame already
+    clearGrid();
+    gameInProgress = true
+
+    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    draw()
+    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    displayShape()
+    timerId = setInterval(moveDown, moveDownSpeed)
+    gameTimeID = setInterval(timer, 1000)
+  }
+
+  function startNewGame() {
+    initiateTetrominoes()
+    gameInProgress = true;
+  }
+  
   function pauseGame() {
     clearInterval(timerId)
     timerId = null;
@@ -265,37 +319,58 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resumeGame() {
-    if (gameInProgress) {
-      draw()
-      timerId = setInterval(moveDown, 1000)
-      nextRandom = Math.floor(Math.random() * theTetrominoes.length)
-      pauseButton.innerText = "Pause Game"
-      gamePaused = false;
-    }
+    gamePaused = false;
+    draw()
+    timerId = setInterval(moveDown, moveDownSpeed)
+    pauseButton.innerText = "Pause Game"
   }
+
+  function endGame() {
+    gameInProgress = false;
+    gameEnded = true
+    resetModifiers()
+    undraw()
+  }
+
+  // BUTTON FUNCTIONS:
+  startButton.addEventListener("click", () => {
+    if (!gameInProgress && !gameEnded) {
+      startNewGame();
+    } else if (!gameInProgress && gameEnded) {
+      restartGame();
+    }
+  })
 
   // pause/resume function:
   pauseButton.addEventListener("click", () => {
-    if (timerId) {                     // this way value is NOT null
+    if (timerId) {
       pauseGame();
     } else {
       resumeGame();
     }
   })
 
-  // game time:
+  // end game button function:
+  endButton.addEventListener("click", () => {
+    if (gameInProgress) {
+      endGame();
+    }
+  })
+
+  // game time:     updates the diffilcuty and score multipliers
   function timer() {
     if (gameInProgress && !gamePaused) {
       time++
       updateTimeModifier();
-      updateSpeedModifier()     // !!!!!!
+      updateSpeedModifier();
     }
   }
+
+  // DIFFICULTY SETTINGS:
   // speed modifier:
   function updateSpeedModifier() {
     speedMultiplier = 1 + (time / 300)
     moveDownSpeed = 1000 * speedMultiplier;
-    console.log(moveDownSpeed)
     return moveDownSpeed
   }
   // time multiplier
@@ -345,26 +420,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // console.log(`Score Change: ${scoreChange}`)
     rowCounterResetID = setTimeout(counterReset, 100 )
 
-    console.log(`Speed Multiplier: ${speedMultiplier}`)
+    // console.log(`Speed Multiplier: ${speedMultiplier}`)
   }
-
   // clear board:
   function clearGrid() {
     gridCells.forEach(index => {
       index.classList.remove("taken");
       index.classList.remove("tetromino")
+      index.style.backgroundColor = ""
     })
   }
 
   //game over
   function gameOver() {
     if(current.some(index => squares[currentPosition + index].classList.contains('taken'))) {
-      // scoreDisplay.innerHTML = 'end'
-      gameInProgress = false;
-      clearInterval(timerId)
-      clearGrid();
-      clearInterval(gameTimeID)
-      // updateHighScore                      !!!!!!!!!!!!
+      endGame()
+      // updateHighScore
     }
   }
 }) 
