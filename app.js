@@ -2,16 +2,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // TO DO:
 
-    // allow for last-second adjustment of tetrominoes??
+    // allow for last-second adjustment of tetrominoes?? 
     // add "lock" to movement functions during pause
-    // fix Enter to start?
-    // pausing before game start and then starting causes a double timer...
-    // prevent movement after connection has been made in certain conditions when making last second adjustments
-    // look into (again) edge interactions...
-    // add "inactive" state to Start New Game button when Game is In Progress
+    // prevent movement after connection has been made in certain conditions when making last second adjustments   -- ADD "TAKEN" DETECTION ON THE SIDES TOO?
 
-    // TEST COMBO MULTIPLIER AGAIN tobesure
+  //////  ^ Add same sort of function to rotate as the one in draw/undraw - taken detection          !!!!!!!!!!!!!!!!!!!!!!
+
+
+    // look (again) into edge interactions...
+
+    // TEST COMBO MULTIPLIER AGAIN to be sure
     // add High Score (5x)        [gameOver function]
+
+    // DONE:
+        // FIXED: pausing before game start and then starting causes a double timer...
+        // FIXED: Enter to start --> solved by replacing it with space bar and adding extra functionality to space bar
+        // FIXED: ending a game and then starting a new one still uses the old tetromino placement 
+       
 
     const width = 10
     let nextRandom = 0;
@@ -43,6 +50,15 @@ document.addEventListener("DOMContentLoaded", () => {
       "#FF2525",
       "#2800F0"
     ]
+
+    // colors = [      choose some of these for the first group 
+    //   "#00D2FC",    TEAL BLUE
+    //   "#FEFEDF",    
+    //   "#ff5e3d",
+    //   "#daabff",
+    //   "#00C9A7",    Mint Green
+    //   "#ffc75f"     orange-ish
+    // ]
    
   //The Tetrominoes
   const lTetromino = [
@@ -127,15 +143,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (e.keyCode === 40) {
         moveDown()
     } else if (e.keyCode === 32) {
-      if (!gamePaused) {
-        pauseGame()          
+      if (!gameInProgress && !gameEnded) {
+        startNewGame();
+      } else if (gameEnded) {
+        restartGame();    
       } else if (gamePaused) {
         resumeGame();
+      } else if (gameInProgress && !gamePaused) {  // is gameInProgress needed here?
+        pauseGame()
       }
-    } else if (e.keycode === 13) {
-        if (!gameInProgress) {
-          startNewGame()
-        }
+    } else if (e.keyCode === 27) {
+      endGame();
     }
   }
 
@@ -288,22 +306,35 @@ document.addEventListener("DOMContentLoaded", () => {
     displayShape()
     timerId = setInterval(moveDown, moveDownSpeed)
     gameTimeID = setInterval(timer, 1000) // measures game time
+    startButton.disabled = true;
+  }
+
+  // reset tetromino information:
+  function resetTetromino() {
+    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    random = nextRandom
+    currentPosition = 4;
+    currentRotation = 0;
+    current = theTetrominoes[random][currentRotation]
   }
 
   // start a new game after previous ended
   function restartGame() {
     resetScore()
     resetStates()
-    resetModifiers() // remove from here??? its in endgame already
+    // resetModifiers()
     clearGrid();
+    resetTetromino();
     gameInProgress = true
 
-    nextRandom = Math.floor(Math.random() * theTetrominoes.length)
+    // nextRandom = Math.floor(Math.random() * theTetrominoes.length)
     draw()
     nextRandom = Math.floor(Math.random() * theTetrominoes.length)
     displayShape()
     timerId = setInterval(moveDown, moveDownSpeed)
     gameTimeID = setInterval(timer, 1000)
+    startButton.disabled = true;
+    console.log(`RESTARTED STATS - speedMultiplier: ${speedMultiplier} || moveDownSpeed: ${moveDownSpeed}`)
   }
 
   function startNewGame() {
@@ -312,17 +343,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   function pauseGame() {
-    clearInterval(timerId)
-    timerId = null;
-    pauseButton.innerText = "Resume Game"
-    gamePaused = true;
+    if (gameInProgress) {
+      clearInterval(timerId)
+      timerId = null;
+      pauseButton.innerText = "Resume Game"
+      gamePaused = true;      
+    }
   }
 
   function resumeGame() {
-    gamePaused = false;
-    draw()
-    timerId = setInterval(moveDown, moveDownSpeed)
-    pauseButton.innerText = "Pause Game"
+    if (gamePaused) {
+      gamePaused = false;
+      draw()
+      timerId = setInterval(moveDown, moveDownSpeed)
+      pauseButton.innerText = "Pause Game"
+    }
   }
 
   function endGame() {
@@ -330,6 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gameEnded = true
     resetModifiers()
     undraw()
+    startButton.disabled = false;
   }
 
   // BUTTON FUNCTIONS:
@@ -347,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pauseGame();
     } else {
       resumeGame();
+      console.log(`RESUMED STATS - speedMultiplier: ${speedMultiplier} || moveDownSpeed: ${moveDownSpeed}`)
     }
   })
 
@@ -363,6 +400,10 @@ document.addEventListener("DOMContentLoaded", () => {
       time++
       updateTimeModifier();
       updateSpeedModifier();
+
+      console.log(`speedMultiplier: ${speedMultiplier}`)
+      console.log(`moveDownSpeed: ${moveDownSpeed}`)
+      console.log(`timeMultiplier: ${timeMultiplier}`)
     }
   }
 
@@ -370,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // speed modifier:
   function updateSpeedModifier() {
     speedMultiplier = 1 + (time / 300)
-    moveDownSpeed = 1000 * speedMultiplier;
+    moveDownSpeed = 1000 / speedMultiplier;
     return moveDownSpeed
   }
   // time multiplier
@@ -412,6 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (rowCounter === 4) {
       comboMultiplier = 2;
     }
+
+    // add permanent increase of .001 - .003 based on the combo?
     
     score = Math.round(score + (10 * rowCounter * comboMultiplier * timeMultiplier));
     scoreValue.innerHTML = score;

@@ -128,3 +128,7 @@
     background-color: #FFAB12;
     border-radius: 5px;
 }
+
+button :disabled {
+    background-color: gray;
+}
