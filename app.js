@@ -3,23 +3,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // TO DO:
 
     // allow for last-second adjustment of tetrominoes?? 
-    // add "lock" to movement functions during pause
+
     // prevent movement after connection has been made in certain conditions when making last second adjustments   -- ADD "TAKEN" DETECTION ON THE SIDES TOO?
-
-  //////  ^ Add same sort of function to rotate as the one in draw/undraw - taken detection          !!!!!!!!!!!!!!!!!!!!!!
-
-
+    //////  ^ Add same sort of function to rotate as the one in draw/undraw - taken detection          !!!!!!!!!!!!!!!!!!!!!!
     // look (again) into edge interactions...
-
     // TEST COMBO MULTIPLIER AGAIN to be sure
     // add High Score (5x)        [gameOver function]
 
     // DONE:
-        // FIXED: pausing before game start and then starting causes a double timer...
-        // FIXED: Enter to start --> solved by replacing it with space bar and adding extra functionality to space bar
-        // FIXED: ending a game and then starting a new one still uses the old tetromino placement 
+      // FIXED: pausing before game start and then starting causes a double timer...
+      // FIXED: Enter to start --> solved by replacing it with space bar and adding extra functionality to space bar
+      // FIXED: ending a game and then starting a new one still uses the old tetromino placement 
+      // FIXED: add "lock" to movement functions during pause
        
-
     const width = 10
     let nextRandom = 0;
     let timerId = null;
@@ -113,25 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let current = theTetrominoes[random][currentRotation]
 
-  // Draw a tetromino
-  function draw() {
-    current.forEach(index => {
-        squares[currentPosition + index].classList.add("tetromino")
-        squares[currentPosition + index].style.backgroundColor = colors[random]
-    })
-
-    if (gamePaused || gameEnded) {
-      undraw()
-    } 
-  } 
-
-  function undraw() {
-      current.forEach(index => {
-          squares[currentPosition + index].classList.remove("tetromino")
-          squares[currentPosition + index].style.backgroundColor = ""
-      }) 
-  }
-
   // assign keycodes
   function control (e) {
     if (e.keyCode === 37) {
@@ -158,6 +135,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener("keydown", control)
+
+  // Draw a tetromino
+  function draw() {
+    current.forEach(index => {
+        squares[currentPosition + index].classList.add("tetromino")
+        squares[currentPosition + index].style.backgroundColor = colors[random]
+    })
+
+    if (gamePaused || gameEnded) {
+      undraw()
+    } 
+  } 
+
+  function undraw() {
+      current.forEach(index => {
+          squares[currentPosition + index].classList.remove("tetromino")
+          squares[currentPosition + index].style.backgroundColor = ""
+      }) 
+  }
 
   function moveDown() {
     if (!gamePaused) {
@@ -187,27 +183,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // move left/right unless blockage or edge
   function moveLeft() {
-    undraw()
-    const isNextLeftEdge = current.some(index => (currentPosition + index) % width === 0);
+    if (!gamePaused) {
+      undraw()
+      const isNextLeftEdge = current.some(index => (currentPosition + index) % width === 0);
+    
+      if (!isNextLeftEdge) currentPosition -= 1; // ...
   
-    if (!isNextLeftEdge) currentPosition -= 1; // ...
-
-    if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
-        currentPosition += 1;
+      if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
+          currentPosition += 1;
+      }
+      draw() 
     }
-    draw() 
   }
 
   function moveRight() {
-    undraw()
-    const isNextRightEdge = current.some(index => (currentPosition + index) % width === width - 1);
+    if (!gamePaused) {
+      undraw()
+      const isNextRightEdge = current.some(index => (currentPosition + index) % width === width - 1);
+    
+      if (!isNextRightEdge) currentPosition += 1; // ...
   
-    if (!isNextRightEdge) currentPosition += 1; // ...
-
-    if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
-        currentPosition -= 1;
+      if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
+          currentPosition -= 1;
+      }
+      draw() 
     }
-    draw() 
   }
 
   ///FIX ROTATION OF TETROMINOS A THE EDGE 
@@ -237,14 +237,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // rotate function
   function rotate() {
-    undraw()
-    currentRotation++
-    if (currentRotation === current.length) {
-        currentRotation = 0
+    if (!gamePaused) {
+      undraw()
+      currentRotation++
+      if (currentRotation === current.length) {
+          currentRotation = 0
+      }
+      current = theTetrominoes[random][currentRotation]
+      checkRotatedPosition();
+      draw()
     }
-    current = theTetrominoes[random][currentRotation]
-    checkRotatedPosition();
-    draw()
   }
 
   // show the next tetromino to drop:
