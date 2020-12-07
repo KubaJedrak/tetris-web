@@ -1,13 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // TO DO:
-
     // allow for last-second adjustment of tetrominoes?? 
-
-    // prevent movement after connection has been made in certain conditions when making last second adjustments   -- ADD "TAKEN" DETECTION ON THE SIDES TOO?
-    //////  ^ Add same sort of function to rotate as the one in draw/undraw - taken detection          !!!!!!!!!!!!!!!!!!!!!!
-    // look (again) into edge interactions...
+    // make sure edge interactions work
     // TEST COMBO MULTIPLIER AGAIN to be sure
+
+
+    // CURRENT FOCUS:
     // add High Score (5x)        [gameOver function]
 
     // DONE:
@@ -15,6 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // FIXED: Enter to start --> solved by replacing it with space bar and adding extra functionality to space bar
       // FIXED: ending a game and then starting a new one still uses the old tetromino placement 
       // FIXED: add "lock" to movement functions during pause
+      // FIXED(ish??*): prevent movement after connection has been made in certain conditions when making last second adjustments
+
+      // * the I tetromino sth still fucks up - no more errors, but it can cover some taken
+      // tetromines while rotating
        
     const width = 10
     let nextRandom = 0;
@@ -239,9 +242,22 @@ document.addEventListener("DOMContentLoaded", () => {
   function rotate() {
     if (!gamePaused) {
       undraw()
+
       currentRotation++
       if (currentRotation === current.length) {
           currentRotation = 0
+      }
+      current = theTetrominoes[random][currentRotation]
+      checkRotatedPosition();
+
+      // prevention of tetromino overlap:
+      if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
+        currentRotation--          // ^ must be fucked somehow
+        console.log(`rotation reversed: ${current}`)
+        console.log(`rotation reversed: ${currentRotation}`)
+        if (currentRotation === -1) {
+          currentRotation = current.length
+        }
       }
       current = theTetrominoes[random][currentRotation]
       checkRotatedPosition();
@@ -484,3 +500,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 }) 
+
+
+
