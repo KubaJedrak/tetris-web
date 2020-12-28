@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function moveDown() {
-    if (!gamePaused) {
+    if (gameInProgress && !gamePaused) {
       undraw()
       currentPosition += width
       draw()
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // move left/right unless blockage or edge
   function moveLeft() {
-    if (!gamePaused) {
+    if (gameInProgress && !gamePaused) {
       undraw()
       const isNextLeftEdge = current.some(index => (currentPosition + index) % width === 0);
     
@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function moveRight() {
-    if (!gamePaused) {
+    if (gameInProgress && !gamePaused) {
       undraw()
       const isNextRightEdge = current.some(index => (currentPosition + index) % width === width - 1);
     
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // rotate function
   function rotate() {
-    if (!gamePaused) {
+    if (gameInProgress && !gamePaused) {
       undraw()
 
       currentRotation++
@@ -419,9 +419,9 @@ document.addEventListener("DOMContentLoaded", () => {
       updateTimeModifier();
       updateSpeedModifier();
 
-      console.log(`speedMultiplier: ${speedMultiplier}`)
-      console.log(`moveDownSpeed: ${moveDownSpeed}`)
-      console.log(`timeMultiplier: ${timeMultiplier}`)
+      // console.log(`speedMultiplier: ${speedMultiplier}`)
+      // console.log(`moveDownSpeed: ${moveDownSpeed}`)
+      // console.log(`timeMultiplier: ${timeMultiplier}`)
     }
   }
 
@@ -496,10 +496,101 @@ document.addEventListener("DOMContentLoaded", () => {
   function gameOver() {
     if(current.some(index => squares[currentPosition + index].classList.contains('taken'))) {
       endGame()
-      // updateHighScore
+      updateHighScore()
     }
   }
+
+  // HIGH SCORE KEEPING:
+
+  // 0. onLoad -> pull data from Local Storage
+  // 0a. if nothing in LocalStorage (first entry/after clear) -> populate it with "00000" scores
+  // 0b. the ^ data kept in a variable allows for quick manipulation
+  // 0c. allow for name addition? -> pointless in LocalStorage, but woudl necessitate 
+  //     array of objects *
+
+  // GAME ENDED:
+  // 1. check/"pull" the variable storing the Local Storage data
+  // 1a. kept as 5 separate positions or one array ??? *
+  // 2a. if free score slots available, replace the first empty one with the current score
+  // 2b. if no free slots remain, compare current score to available scores
+  // 3. place current score within the array*? in the appropriate place while adjusting 
+  //    positions of others, poping last one
+  // 4. display changed version of the high score array *
+  // 5. push changes to local Storage 
+
+  // Check if the stored scoreboard exists:
+  let initialScoresPull = window.localStorage.getItem("scores")
+  let parsedInitialScores = JSON.parse(initialScoresPull) //unnecessary?
+
+  // if not, populating it with empty scores
+  if (parsedInitialScores === null) {
+
+    let zeroScores = [
+      {value: 0},
+      {value: 0},
+      {value: 0},
+      {value: 0},
+      {value: 0},
+    ]
+    window.localStorage.setItem("scores", JSON.stringify(zeroScores))  // variable here?
+
+  }
+
+  // pulling scoreboard
+  let scores = window.localStorage.getItem("scores")
+  let parsedScores = JSON.parse(scores)
+  let positionToReplace = null;
+
+  let firstScore = document.querySelector(".first-score")
+  let secondScore = document.querySelector(".second-score")
+  let thirdScore = document.querySelector(".third-score")
+  let fourthScore = document.querySelector(".fourth-score")
+  let fifthScore = document.querySelector(".fifth-score")
+
+  // Updating scoreboard display at load:
+  firstScore.innerText = parsedScores[0].value
+  secondScore.innerText = parsedScores[1].value
+  thirdScore.innerText = parsedScores[2].value
+  fourthScore.innerText = parsedScores[3].value
+  fifthScore.innerText = parsedScores[4].value
+
+  // NEW SCORE UPLOAD:
+
+  // score (<-- value name)
+  // move function execution to endGame()
+
+  // 1. compare current score to every element in the parsedScores array
+  // 2. pop and splice if necessary
+  // 3. upload again
+
+  function updateHighScore() {
+
+    // parsedScores.forEach((element) => {
+    //   console.log(`Original value: ${element.value}`)
+    // })
+
+    for (i = 0; i <= parsedScores.length; i++) {
+      if (score > parsedScores[i].value) {
+        positionToReplace = i;
+        break
+      }
+    }
+    // console.log(`Position to replace: ${positionToReplace}`)
+
+    // adding latest score to high scores:
+    parsedScores.splice(positionToReplace, 0, {value: score})
+    parsedScores.pop();
+
+    localStorage.setItem("scores", JSON.stringify(parsedScores))
+
+    // updating High Scores Display:
+    firstScore.innerText = parsedScores[0].value
+    secondScore.innerText = parsedScores[1].value
+    thirdScore.innerText = parsedScores[2].value
+    fourthScore.innerText = parsedScores[3].value
+    fifthScore.innerText = parsedScores[4].value
+
+    positionToReplace = null; // resetting position so that it doesnt carry over to the next
+  }
 }) 
-
-
 
