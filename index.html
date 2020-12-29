@@ -5,17 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Let's Play Tetris!</title>
 
-
     <link rel="stylesheet" href="style.css"></link>
-
     <script src="app.js"></script>
-
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
 </head>
 <body>
-    
     <div class="wrapper">
+
+        <div class="game-instruction">
+            <article class="game-instruction-text">
+                The goal of the game is to keep clearing the grid for as long as possible by filling rows with tetrominoes. Once filled, a row will empty, the remaining tetrominoes will "fall" and you will gain score. You can do the following: </br>
+                </br>
+                - rotate the tetromino by pressing Up Arrow, </br>
+                - move left (by pressing Left Arrow) or right (by pressing Right Arrow), </br>
+                - move down by one row by pressing Down Arrow, </br>
+                - Space button starts a new game or pauses/unpauses a game in progress, </br>
+                - Esc button stops the game  </br>
+                </br>
+                As time goes on, the game will become more difficult, but the amount of points gained will also increase
+                </br>
+                </br>
+                Good luck!
+                        
+            </article>
+            <button class="button instruction-button"> OK </button>
+        </div>
 
         <div class="game-container">
             
@@ -264,7 +279,7 @@
                 <div class="high-scores">
                     <table class="high-scores-table">
                         <tr>
-                            <th>High Scores:</th>
+                            <th class="high-scores-header">High Scores:</th>
                         </tr>
                         <tr>
                             <td>1st</td>
@@ -289,10 +304,12 @@
                     </table>
                 </div>
 
+                <div class="misc">
+                    <div class="instruction-show"> >> Instructions << </div>
+                    <div class="languages"></div>
+                </div>
             </div>
-
         </div>
     </div>
-
 </body>
 </html>

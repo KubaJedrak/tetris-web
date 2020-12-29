@@ -1,24 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // TO DO:
-    // allow for last-second adjustment of tetrominoes?? 
-    // make sure edge interactions work
-    // TEST COMBO MULTIPLIER AGAIN to be sure
+    // allow for last-second adjustment of tetrominoes??
+    // prevent too many tetrominoes of one type from spawning
 
-
-    // CURRENT FOCUS:
-    // add High Score (5x)        [gameOver function]
-
-    // DONE:
-      // FIXED: pausing before game start and then starting causes a double timer...
-      // FIXED: Enter to start --> solved by replacing it with space bar and adding extra functionality to space bar
-      // FIXED: ending a game and then starting a new one still uses the old tetromino placement 
-      // FIXED: add "lock" to movement functions during pause
-      // FIXED(ish??*): prevent movement after connection has been made in certain conditions when making last second adjustments
-
-      // * the I tetromino sth still fucks up - no more errors, but it can cover some taken
-      // tetromines while rotating
-       
     const width = 10
     let nextRandom = 0;
     let timerId = null;
@@ -28,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const startButton = document.querySelector(".start-game-button")
     const pauseButton = document.querySelector(".pause-button")
     const endButton = document.querySelector(".end-game-button")
+    const instructionButton = document.querySelector(".instruction-button")
+    const showInstructionsAgain = document.querySelector(".instruction-show")
 
     let squares = Array.from(document.querySelectorAll(".grid div"))
     let gridCells = Array.from(document.querySelectorAll(".grid-cell"))
@@ -42,23 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let moveDownSpeed = 1000;
 
     const colors = [
-      "#F7FF28",
-      "#FF3BC1",
-      "#00DC93",
-      "#00FAFB",
-      "#FF2525",
-      "#2800F0"
+      "#ffdc5f", 
+      "#ff59cb", 
+      "#00c979", 
+      "#00D2FC", 
+      "#ff4636", 
+      "#1745ff"   
     ]
 
-    // colors = [      choose some of these for the first group 
-    //   "#00D2FC",    TEAL BLUE
-    //   "#FEFEDF",    
-    //   "#ff5e3d",
-    //   "#daabff",
-    //   "#00C9A7",    Mint Green
-    //   "#ffc75f"     orange-ish
-    // ]
-   
   //The Tetrominoes
   const lTetromino = [
     [1, width+1, width*2+1, 2],
@@ -111,6 +89,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentRotation = 0;
 
   let current = theTetrominoes[random][currentRotation]
+
+  // Checks if instructions were read before and if so prevents displaying them again
+  if (localStorage.getItem("instructions-read")) {
+    document.querySelector(".game-instruction").hidden = true;
+  }
 
   // assign keycodes
   function control (e) {
@@ -195,7 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (current.some(index => squares[currentPosition + index].classList.contains("taken"))) {
           currentPosition += 1;
       }
-      draw() 
+      draw()
+      freeze() 
     }
   }
 
@@ -210,6 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currentPosition -= 1;
       }
       draw() 
+      freeze() 
     }
   }
 
@@ -262,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
       current = theTetrominoes[random][currentRotation]
       checkRotatedPosition();
       draw()
+      freeze() 
     }
   }
 
@@ -288,13 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
       displaySquares[displayIndex + index].classList.add("tetromino")
       displaySquares[displayIndex + index].style.backgroundColor = colors[nextRandom]
     })
-  }
-
-  function logStates() {
-    console.log(`game in progress: ${gameInProgress}`)
-    console.log(`game paused: ${gamePaused}`)
-    console.log(`game ended: ${gameEnded}`)
-    console.log("---------------------")
   }
 
   // Game State Functions:
@@ -340,7 +319,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function restartGame() {
     resetScore()
     resetStates()
-    // resetModifiers()
     clearGrid();
     resetTetromino();
     gameInProgress = true
@@ -352,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
     timerId = setInterval(moveDown, moveDownSpeed)
     gameTimeID = setInterval(timer, 1000)
     startButton.disabled = true;
-    console.log(`RESTARTED STATS - speedMultiplier: ${speedMultiplier} || moveDownSpeed: ${moveDownSpeed}`)
   }
 
   function startNewGame() {
@@ -386,7 +363,24 @@ document.addEventListener("DOMContentLoaded", () => {
     startButton.disabled = false;
   }
 
+  function closeInstructions() {
+    document.querySelector(".game-instruction").hidden = true;
+    localStorage.setItem("instructions-read", value = true)
+  }
+
+  function displayInstructions() {
+    document.querySelector(".game-instruction").hidden = false;
+  }
+
   // BUTTON FUNCTIONS:
+  instructionButton.addEventListener("click", () => {
+    closeInstructions()
+  })
+
+  showInstructionsAgain.addEventListener("click", () => {
+    displayInstructions()
+  })
+
   startButton.addEventListener("click", () => {
     if (!gameInProgress && !gameEnded) {
       startNewGame();
@@ -418,10 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
       time++
       updateTimeModifier();
       updateSpeedModifier();
-
-      // console.log(`speedMultiplier: ${speedMultiplier}`)
-      // console.log(`moveDownSpeed: ${moveDownSpeed}`)
-      // console.log(`timeMultiplier: ${timeMultiplier}`)
     }
   }
 
@@ -450,7 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
           squares[index].style.backgroundColor = ""
         })
         const squaresRemoved = squares.splice(i, width)
-        console.log(squaresRemoved)
         squares = squaresRemoved.concat(squares)
         squares.forEach(cell => grid.appendChild(cell))
       }
@@ -458,7 +447,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function counterReset() {
       rowCounter = 0;
-      // console.log(`PING: Counter now at ${rowCounter}`)
     }
     
     let comboMultiplier = null;
@@ -476,13 +464,9 @@ document.addEventListener("DOMContentLoaded", () => {
     
     score = Math.round(score + (10 * rowCounter * comboMultiplier * timeMultiplier));
     scoreValue.innerHTML = score;
-    // console.log(`rowCounter of ${rowCounter} --> Combo Multiplier: ${comboMultiplier}`)
-    // let scoreChange = (10 * rowCounter * comboMultiplier * timeMultiplier)
-    // console.log(`Score Change: ${scoreChange}`)
     rowCounterResetID = setTimeout(counterReset, 100 )
-
-    // console.log(`Speed Multiplier: ${speedMultiplier}`)
   }
+
   // clear board:
   function clearGrid() {
     gridCells.forEach(index => {
@@ -499,24 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateHighScore()
     }
   }
-
-  // HIGH SCORE KEEPING:
-
-  // 0. onLoad -> pull data from Local Storage
-  // 0a. if nothing in LocalStorage (first entry/after clear) -> populate it with "00000" scores
-  // 0b. the ^ data kept in a variable allows for quick manipulation
-  // 0c. allow for name addition? -> pointless in LocalStorage, but woudl necessitate 
-  //     array of objects *
-
-  // GAME ENDED:
-  // 1. check/"pull" the variable storing the Local Storage data
-  // 1a. kept as 5 separate positions or one array ??? *
-  // 2a. if free score slots available, replace the first empty one with the current score
-  // 2b. if no free slots remain, compare current score to available scores
-  // 3. place current score within the array*? in the appropriate place while adjusting 
-  //    positions of others, poping last one
-  // 4. display changed version of the high score array *
-  // 5. push changes to local Storage 
 
   // Check if the stored scoreboard exists:
   let initialScoresPull = window.localStorage.getItem("scores")
@@ -536,16 +502,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-  // pulling scoreboard
-  let scores = window.localStorage.getItem("scores")
-  let parsedScores = JSON.parse(scores)
-  let positionToReplace = null;
-
   let firstScore = document.querySelector(".first-score")
   let secondScore = document.querySelector(".second-score")
   let thirdScore = document.querySelector(".third-score")
   let fourthScore = document.querySelector(".fourth-score")
   let fifthScore = document.querySelector(".fifth-score")
+
+  // pulling scoreboard
+  let scores = window.localStorage.getItem("scores")
+  let parsedScores = JSON.parse(scores)
+  let positionToReplace = null;
 
   // Updating scoreboard display at load:
   firstScore.innerText = parsedScores[0].value
@@ -554,20 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fourthScore.innerText = parsedScores[3].value
   fifthScore.innerText = parsedScores[4].value
 
-  // NEW SCORE UPLOAD:
-
-  // score (<-- value name)
-  // move function execution to endGame()
-
-  // 1. compare current score to every element in the parsedScores array
-  // 2. pop and splice if necessary
-  // 3. upload again
-
   function updateHighScore() {
-
-    // parsedScores.forEach((element) => {
-    //   console.log(`Original value: ${element.value}`)
-    // })
 
     for (i = 0; i <= parsedScores.length; i++) {
       if (score > parsedScores[i].value) {
@@ -575,7 +528,6 @@ document.addEventListener("DOMContentLoaded", () => {
         break
       }
     }
-    // console.log(`Position to replace: ${positionToReplace}`)
 
     // adding latest score to high scores:
     parsedScores.splice(positionToReplace, 0, {value: score})

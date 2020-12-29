@@ -33,6 +33,25 @@
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cbcbcb', endColorstr='#8f8f8f',GradientType=0 ); /* IE6-9 */
 }
 
+.game-instruction{
+    width: 600px;
+    height: auto;
+    position: absolute;
+    left: 35%;
+    top: 22%;
+
+    padding: 40px 40px;
+
+    text-align: justify;
+
+    background-color: hsla(0, 0%, 100%, 0.9);
+    border-radius: 5px;
+}
+
+.game-instruction-text{
+    font-size: 16px;
+}
+
 .game-container{
     width: 600px;
     height: 800px;
@@ -129,6 +148,40 @@
     border-radius: 5px;
 }
 
-button :disabled {
+button:disabled {
     background-color: gray;
+}
+
+.instruction-button{
+    margin: 25px 35% 0px;
+}
+
+.high-scores{
+    width: 150px;
+    height: 140px;
+    margin: 50px auto;
+    padding: 5px;
+    justify-content: center;
+
+    background-color: #8f8f8f;
+    border-radius: 5px;
+}
+
+.high-scores-header{
+    width: 150px;
+    height: 20px;
+    font-size: 15px;
+
+    margin: 0px 5px;
+}
+
+.high-scores-score{
+    justify-content: right;
+    text-align: right;
+    font-size: 14px;
+    margin: 0px 2px;
+}
+
+.instruction-show:hover {
+    color: #FFAB12;
 }
